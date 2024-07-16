@@ -1,0 +1,27 @@
+version: '3'
+
+volumes:
+  db:
+    driver: local
+
+services:
+  db:
+    environment:
+      POSTGRES_USER: "exampleuser"
+      POSTGRES_DB: "example"
+      POSTGRES_PASSWORD: "123321"
+    image: postgres:16.3-alpine
+    ports:
+      - "5432:5432"
+    volumes: 
+      - db:/var/lib/postgresql/data
+  web:
+    restart: on-failure
+    depends_on:
+      - db
+    build: .
+    environment:
+      SERVER: "0.0.0.0:8080"
+      DATABASE_URL: "postgresql://exampleuser:123321@db:5432/example"
+    ports:
+      - "8080:8080"
