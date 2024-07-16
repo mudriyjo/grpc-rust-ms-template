@@ -21,3 +21,14 @@ pub async fn get_user(user_id: i32, pool: &Pool<Postgres>) -> anyhow::Result<Use
 
     Ok(res)
 }
+
+pub async fn get_user_lsit(pool: &Pool<Postgres>) -> anyhow::Result<Vec<User>> {
+    let res: Vec<User> = sqlx::query_as(
+            "SELECT id, user_name, user_second_name, phone, user_address FROM user_information",
+        )
+        .fetch_all(pool)
+        .await
+        .unwrap_or_else(|_| panic!("Can't fetch users"));
+
+    Ok(res)
+}
