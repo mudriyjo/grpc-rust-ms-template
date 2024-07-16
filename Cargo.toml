@@ -19,6 +19,6 @@ prost = "0.13"
 [build-dependencies]
 tonic-build = "0.12"
 
-[[bin]] # Bin to run the HelloWorld gRPC server
-name = "helloworld-server"
+[[bin]]
+name = "example-server"
 path = "src/main.rs"

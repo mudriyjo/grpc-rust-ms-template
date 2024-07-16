@@ -1,17 +1,22 @@
 use sqlx::{Pool, Postgres};
-use crate::repositories::user_repository::{create, get_user, get_user_lsit, CreateUser, User};
+use crate::repositories::user_repository::{create, delete, get_user, get_user_lsit, update, CreateUser, UpdateUser, User};
 
-pub async fn get_user_by_id(id: i32, pool: &Pool<Postgres>) -> anyhow::Result<User> {
-    let user = get_user(id, pool).await?;
-    Ok(user)
+pub async fn get_user_by_id(user_id: i32, pool: &Pool<Postgres>) -> anyhow::Result<User> {
+    get_user(user_id, pool).await
 }
 
 pub async fn get_users(pool: &Pool<Postgres>) -> anyhow::Result<Vec<User>> {
-    let user = get_user_lsit(pool).await?;
-    Ok(user)
+    get_user_lsit(pool).await
 }
 
 pub async fn create_user(user: CreateUser, pool: &Pool<Postgres>) -> anyhow::Result<User> {
-    let user = create(user, pool).await?;
-    Ok(user)
+    create(user, pool).await
+}
+
+pub async fn delete_user(user_id: i32, pool: &Pool<Postgres>) -> anyhow::Result<()> {
+    delete(user_id, pool).await
+}
+
+pub async fn update_user(user: UpdateUser, pool: &Pool<Postgres>) -> anyhow::Result<User> {
+    update(user, pool).await
 }

@@ -6,8 +6,8 @@ service User {
   rpc GetUser (UserIdRequest) returns (UserResponse) {}
   rpc GetUserList (Empty) returns (UserListResponse) {}
   rpc CreateUser (UserCreateRequest) returns (UserResponse) {}
-  // rpc DeleteUser (UserIdRequest) returns (Empty) {}
-  // rpc UpdateUser (UserUpdateRequest) returns (UserResponse) {}
+  rpc DeleteUser (UserIdRequest) returns (Empty) {}
+  rpc UpdateUser (UserUpdateRequest) returns (UserResponse) {}
 }
 
 message Empty {}
