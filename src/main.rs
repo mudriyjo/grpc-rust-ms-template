@@ -1,10 +1,10 @@
-use axum::{response::Html, routing::get};
+use axum::routing::get;
 use sqlx::PgPool;
 use tokio::net::TcpListener;
+use handlers::hello_handler::index_handler;
 
-async fn index() -> Html<String> {
-    Html("Hello world!".to_string())
-}
+mod handlers;
+mod services;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -23,7 +23,7 @@ async fn main() -> anyhow::Result<()> {
     let connection = TcpListener::bind(server_port_address).await?;
 
     let router = axum::Router::new()
-        .route("/", get(index));
+        .route("/", get(index_handler));
 
     let server = axum::serve(connection, router);
     tracing::info!("Start server...");
