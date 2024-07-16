@@ -27,10 +27,11 @@ impl User for UserHandelr {
         &self,
         request: Request<UserIdRequest>,
     ) -> Result<Response<UserResponse>, Status> {
-        println!("Got a request: {:?}", request);
+        tracing::info!("Got a request: {:?}", request);
+        let user_id: UserIdRequest = request.into_inner();
 
         let reply = UserResponse {
-            id: 1,
+            id: user_id.id,
             user_name: "Test".to_string(),
             user_second_name: "Testovich".to_string(),
             user_address: "Lol city".to_string(),
