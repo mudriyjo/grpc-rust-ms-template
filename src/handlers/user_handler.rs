@@ -2,9 +2,9 @@ use sqlx::{Pool, Postgres};
 use tonic::{Request, Response, Status};
 
 pub use user::user_server::{User, UserServer};
-use user::{Empty, UserIdRequest, UserListResponse, UserResponse};
+use user::{Empty, UserIdRequest, UserListResponse, UserResponse, UserCreateRequest};
 
-use crate::services::user_service::{get_user_by_id, get_users};
+use crate::{repositories::user_repository::CreateUser, services::user_service::{create_user, get_user_by_id, get_users}};
 
 pub mod user {
     #![allow(clippy::large_enum_variant)]
@@ -72,21 +72,28 @@ impl User for UserHandelr {
         }
     }
 
-    // async fn create_user(&self, request: Request<UserCreateRequest>) -> Result<Response<UserResponse>, Status>{
-    //     tracing::info!("Got a request: {:?}", request);
-    //     let user_id: UserIdRequest = request.into_inner();
+    async fn create_user(&self, request: Request<UserCreateRequest>) -> Result<Response<UserResponse>, Status>{
+        tracing::info!("Got a request: {:?}", request);
+        let user_request: UserCreateRequest = request.into_inner();
 
-    //     let user = get_user_by_id(user_id.id, &self.connection).await.expect("Can't fetch user");
-    //     let reply = UserResponse {
-    //         id: user.id,
-    //         user_name: user.user_name,
-    //         user_second_name: user.user_second_name,
-    //         user_address: user.user_address,
-    //         phone: user.phone,
-    //     };
+        let user = CreateUser {
+            user_name: user_request.user_name,
+            user_second_name: user_request.user_second_name,
+            phone: user_request.phone,
+            user_address: user_request.user_address
+        };
 
-    //     Ok(Response::new(reply))
-    // }
+        let user = create_user(user, &self.connection).await.expect("Can't create user");
+        let reply = UserResponse {
+            id: user.id,
+            user_name: user.user_name,
+            user_second_name: user.user_second_name,
+            user_address: user.user_address,
+            phone: user.phone,
+        };
+
+        Ok(Response::new(reply))
+    }
 
     // async fn delete_user(&self, request: Request<UserIdRequest>) -> Result<Response<()>, Status> {
     //     tracing::info!("Got a request: {:?}", request);
