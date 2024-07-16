@@ -14,7 +14,7 @@ async fn main() -> anyhow::Result<()> {
     let db_url = std::env::var("DATABASE_URL")?;
     let pool = PgPool::connect(&db_url).await?;
 
-    sqlx::migrate!("./migrations").run(&pool).await?;
+    sqlx::migrate!("./migration").run(&pool).await?;
 
     color_eyre::install().expect("Error with starting color eyre hook...");
 
