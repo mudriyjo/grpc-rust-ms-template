@@ -1,7 +1,7 @@
-use axum::routing::get;
 use sqlx::PgPool;
-use tokio::net::TcpListener;
-use handlers::hello_handler::index_handler;
+use tonic::transport::Server;
+use crate::handlers::user_handler::UserHandelr;
+use handlers::user_handler::UserServer;
 
 mod handlers;
 mod services;
@@ -20,14 +20,14 @@ async fn main() -> anyhow::Result<()> {
 
     tracing_subscriber::fmt::init();
 
-    let connection = TcpListener::bind(server_port_address).await?;
+    let user = UserHandelr::new(pool.clone());
 
-    let router = axum::Router::new()
-        .route("/", get(index_handler));
-
-    let server = axum::serve(connection, router);
     tracing::info!("Start server...");
-    server.await?;
+
+    Server::builder()
+        .add_service(UserServer::new(user))
+        .serve(server_port_address.parse().expect("Can't parse server connection string"))
+        .await?;
 
     Ok(())
 }

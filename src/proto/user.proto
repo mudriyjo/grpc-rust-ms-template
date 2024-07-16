@@ -1,8 +1,23 @@
-syntax="proto3"
+syntax = "proto3";
 
-message User {
-  string name = 1;
-  string second_name = 2;
-  string phone = 3;
-  string address = 4;
+package user;
+
+service User {
+  rpc GetUser (UserIdRequest) returns (UserResponse) {}
+}
+
+message UserIdRequest {
+  int32 id = 1;
+}
+
+message UserListResponse {
+  repeated UserResponse users = 1;
+}
+
+message UserResponse {
+  int32 id = 1;
+  string user_name = 2;
+  string user_second_name = 3;
+  string phone = 4;
+  string user_address = 5;
 }
