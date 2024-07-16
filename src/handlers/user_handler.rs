@@ -4,6 +4,8 @@ use tonic::{Request, Response, Status};
 pub use user::user_server::{User, UserServer};
 use user::{UserIdRequest, UserResponse};
 
+use crate::services::user_service::get_user_by_id;
+
 pub mod user {
     #![allow(clippy::large_enum_variant)]
     #![allow(clippy::derive_partial_eq_without_eq)]
@@ -30,12 +32,13 @@ impl User for UserHandelr {
         tracing::info!("Got a request: {:?}", request);
         let user_id: UserIdRequest = request.into_inner();
 
+        let user = get_user_by_id(user_id.id, &self.connection).await.expect("Can't fetch user");
         let reply = UserResponse {
-            id: user_id.id,
-            user_name: "Test".to_string(),
-            user_second_name: "Testovich".to_string(),
-            user_address: "Lol city".to_string(),
-            phone: "8919999999".to_string(),
+            id: user.id,
+            user_name: user.user_name,
+            user_second_name: user.user_second_name,
+            user_address: user.user_address,
+            phone: user.phone,
         };
 
         Ok(Response::new(reply))

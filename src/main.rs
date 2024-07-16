@@ -5,6 +5,7 @@ use handlers::user_handler::UserServer;
 
 mod handlers;
 mod services;
+mod repositories;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
