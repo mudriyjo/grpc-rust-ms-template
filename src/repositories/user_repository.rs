@@ -33,8 +33,7 @@ pub async fn get_user(user_id: i32, pool: &Pool<Postgres>) -> anyhow::Result<Use
         )
         .bind(user_id)
         .fetch_one(pool)
-        .await
-        .unwrap_or_else(|_| panic!("Can't find user with user id: {}", user_id));
+        .await?;
 
     Ok(res)
 }
@@ -44,8 +43,7 @@ pub async fn get_user_lsit(pool: &Pool<Postgres>) -> anyhow::Result<Vec<User>> {
         "SELECT id, user_name, user_second_name, phone, user_address FROM user_information",
     )
     .fetch_all(pool)
-    .await
-    .unwrap_or_else(|_| panic!("Can't fetch users"));
+    .await?;
 
     Ok(res)
 }
@@ -59,8 +57,7 @@ pub async fn create(user: CreateUser, pool: &Pool<Postgres>) -> anyhow::Result<U
         .bind(user.phone)
         .bind(user.user_address)
         .fetch_one(pool)
-        .await
-        .unwrap_or_else(|_| panic!("Can't fetch inserted user"));
+        .await?;
 
     Ok(res)
 }
@@ -69,8 +66,7 @@ pub async fn delete(user_id: i32, pool: &Pool<Postgres>) -> anyhow::Result<()> {
     sqlx::query("DELETE FROM user_information WHERE id = $1;")
         .bind(user_id)
         .execute(pool)
-        .await
-        .unwrap_or_else(|_| panic!("Can't delete user with user id: {}", user_id));
+        .await?;
 
     Ok(())
 }
@@ -116,8 +112,7 @@ pub async fn update(user: UpdateUser, pool: &Pool<Postgres>) -> anyhow::Result<U
 
     let res = query_for_execution
         .fetch_one(pool)
-        .await
-        .unwrap_or_else(|_| panic!("Can't fetch inserted user"));
+        .await?;
 
     let user = User {
         id: res.get("id"),
