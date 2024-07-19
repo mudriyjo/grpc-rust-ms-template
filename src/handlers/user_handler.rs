@@ -5,7 +5,7 @@ pub use user::user_server::{User, UserServer};
 use user::{Empty, UserCreateRequest, UserIdRequest, UserListResponse, UserResponse, UserUpdateRequest};
 
 use crate::{
-    repositories::user_repository::{CreateUser, UpdateUser},
+    repositories::{self, user_repository::{CreateUser, UpdateUser}},
     services::user_service::{create_user, delete_user, get_user_by_id, get_users, update_user},
 };
 
@@ -13,6 +13,18 @@ pub mod user {
     #![allow(clippy::large_enum_variant)]
     #![allow(clippy::derive_partial_eq_without_eq)]
     tonic::include_proto!("user");
+}
+
+impl From<repositories::user_repository::User> for UserResponse {
+    fn from(user: repositories::user_repository::User) -> Self {
+        UserResponse {
+            id: user.id,
+            user_name: user.user_name,
+            user_second_name: user.user_second_name,
+            user_address: user.user_address,
+            phone: user.phone,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -38,15 +50,8 @@ impl User for UserHandelr {
         let user = get_user_by_id(user_id.id, &self.connection)
             .await
             .expect("Can't fetch user");
-        let reply = UserResponse {
-            id: user.id,
-            user_name: user.user_name,
-            user_second_name: user.user_second_name,
-            user_address: user.user_address,
-            phone: user.phone,
-        };
 
-        Ok(Response::new(reply))
+        Ok(Response::new(user.into()))
     }
 
     async fn get_user_list(
@@ -59,13 +64,7 @@ impl User for UserHandelr {
             let reply = UserListResponse {
                 users: user_list
                     .into_iter()
-                    .map(|user| UserResponse {
-                        id: user.id,
-                        user_name: user.user_name,
-                        user_second_name: user.user_second_name,
-                        user_address: user.user_address,
-                        phone: user.phone,
-                    })
+                    .map(|user| user.into())
                     .collect(),
             };
 
@@ -92,15 +91,8 @@ impl User for UserHandelr {
         let user = create_user(user, &self.connection)
             .await
             .expect("Can't create user");
-        let reply = UserResponse {
-            id: user.id,
-            user_name: user.user_name,
-            user_second_name: user.user_second_name,
-            user_address: user.user_address,
-            phone: user.phone,
-        };
 
-        Ok(Response::new(reply))
+        Ok(Response::new(user.into()))
     }
 
     async fn delete_user(
@@ -132,15 +124,7 @@ impl User for UserHandelr {
         };
         
         let user = update_user(user_for_update, &self.connection).await.expect("Can't fetch user");
-        
-        let reply = UserResponse {
-            id: user.id,
-            user_name: user.user_name,
-            user_second_name: user.user_second_name,
-            user_address: user.user_address,
-            phone: user.phone,
-        };
 
-        Ok(Response::new(reply))
+        Ok(Response::new(user.into()))
     }
 }
