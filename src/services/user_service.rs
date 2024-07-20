@@ -1,5 +1,5 @@
 use sqlx::{Pool, Postgres};
-use crate::repositories::user_repository::{create, delete, get_user, get_user_lsit, update, CreateUser, UpdateUser, User};
+use crate::repositories::{entity::user::{CreateUser, UpdateUser, User}, user_repository::{create, delete, get_user, get_user_lsit, update}};
 
 pub async fn get_user_by_id(user_id: i32, pool: &Pool<Postgres>) -> anyhow::Result<User> {
     get_user(user_id, pool).await

@@ -4,10 +4,7 @@ use tonic::{Request, Response, Status};
 pub use user::user_server::{User, UserServer};
 use user::{Empty, UserCreateRequest, UserIdRequest, UserListResponse, UserResponse, UserUpdateRequest};
 
-use crate::{
-    repositories::{self, user_repository::{CreateUser, UpdateUser}},
-    services::user_service::{create_user, delete_user, get_user_by_id, get_users, update_user},
-};
+use crate::{repositories::entity::user::{CreateUser, UpdateUser, User as RepositoryUser}, services::user_service::{create_user, delete_user, get_user_by_id, get_users, update_user}};
 
 pub mod user {
     #![allow(clippy::large_enum_variant)]
@@ -15,8 +12,8 @@ pub mod user {
     tonic::include_proto!("user");
 }
 
-impl From<repositories::user_repository::User> for UserResponse {
-    fn from(user: repositories::user_repository::User) -> Self {
+impl From<RepositoryUser> for UserResponse {
+    fn from(user: RepositoryUser) -> Self {
         UserResponse {
             id: user.id,
             user_name: user.user_name,
