@@ -85,11 +85,11 @@ impl User for UserHandelr {
             user_address: user_request.user_address,
         };
 
-        let user = create_user(user, &self.connection)
+        create_user(user, &self.connection)
             .await
-            .expect("Can't create user");
+            .map(|el| Ok(Response::new(el.into())))
+            .map_err(|e| e.into())
 
-        Ok(Response::new(user.into()))
     }
 
     async fn delete_user(

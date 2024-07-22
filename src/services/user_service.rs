@@ -1,22 +1,50 @@
+use crate::repositories::{
+    entity::user::{CreateUser, UpdateUser, User},
+    user_repository::{create, delete, get_user, get_user_lsit, update},
+};
 use sqlx::{Pool, Postgres};
-use crate::repositories::{entity::user::{CreateUser, UpdateUser, User}, user_repository::{create, delete, get_user, get_user_lsit, update}};
+use tonic::Status;
 
-pub async fn get_user_by_id(user_id: i32, pool: &Pool<Postgres>) -> anyhow::Result<User> {
-    get_user(user_id, pool).await
+type ServiceResult<T> = Result<T, UserServiceError>;
+pub enum UserServiceError {
+    DBError(String),
 }
 
-pub async fn get_users(pool: &Pool<Postgres>) -> anyhow::Result<Vec<User>> {
-    get_user_lsit(pool).await
+impl From<UserServiceError> for Status {
+    fn from(value: UserServiceError) -> Self {
+        match value {
+            UserServiceError::DBError(msg) => Status::internal(msg),
+            _ => Status::unimplemented("Status handler for this error unimplemented"),
+        }
+    }
 }
 
-pub async fn create_user(user: CreateUser, pool: &Pool<Postgres>) -> anyhow::Result<User> {
-    create(user, pool).await
+pub async fn get_user_by_id(user_id: i32, pool: &Pool<Postgres>) -> ServiceResult<User> {
+    get_user(user_id, pool)
+        .await
+        .map_err(|e| UserServiceError::DBError(e.to_string()))
 }
 
-pub async fn delete_user(user_id: i32, pool: &Pool<Postgres>) -> anyhow::Result<()> {
-    delete(user_id, pool).await
+pub async fn get_users(pool: &Pool<Postgres>) -> ServiceResult<Vec<User>> {
+    get_user_lsit(pool)
+        .await
+        .map_err(|e| UserServiceError::DBError(e.to_string()))
 }
 
-pub async fn update_user(user: UpdateUser, pool: &Pool<Postgres>) -> anyhow::Result<User> {
-    update(user, pool).await
+pub async fn create_user(user: CreateUser, pool: &Pool<Postgres>) -> ServiceResult<User> {
+    create(user, pool)
+        .await
+        .map_err(|e| UserServiceError::DBError(e.to_string()))
+}
+
+pub async fn delete_user(user_id: i32, pool: &Pool<Postgres>) -> ServiceResult<()> {
+    delete(user_id, pool)
+        .await
+        .map_err(|e| UserServiceError::DBError(e.to_string()))
+}
+
+pub async fn update_user(user: UpdateUser, pool: &Pool<Postgres>) -> ServiceResult<User> {
+    update(user, pool)
+        .await
+        .map_err(|e| UserServiceError::DBError(e.to_string()))
 }
