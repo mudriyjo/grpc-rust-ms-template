@@ -2,9 +2,14 @@ use sqlx::{Pool, Postgres};
 use tonic::{Request, Response, Status};
 
 pub use user::user_server::{User, UserServer};
-use user::{Empty, UserCreateRequest, UserIdRequest, UserListResponse, UserResponse, UserUpdateRequest};
+use user::{
+    Empty, UserCreateRequest, UserIdRequest, UserListResponse, UserResponse, UserUpdateRequest,
+};
 
-use crate::{repositories::entity::user::{CreateUser, UpdateUser, User as RepositoryUser}, services::user_service::{create_user, delete_user, get_user_by_id, get_users, update_user}};
+use crate::{
+    repositories::entity::user::{CreateUser, UpdateUser, User as RepositoryUser},
+    services::user_service::{create_user, delete_user, get_user_by_id, get_users, update_user},
+};
 
 pub mod user {
     #![allow(clippy::large_enum_variant)]
@@ -44,11 +49,10 @@ impl User for UserHandelr {
         tracing::info!("Got a request: {:?}", request);
         let user_id: UserIdRequest = request.into_inner();
 
-        let user = get_user_by_id(user_id.id, &self.connection)
+        get_user_by_id(user_id.id, &self.connection)
             .await
-            .expect("Can't fetch user");
-
-        Ok(Response::new(user.into()))
+            .map(|user| Response::new(user.into()))
+            .map_err(|e| e.into())
     }
 
     async fn get_user_list(
@@ -59,10 +63,7 @@ impl User for UserHandelr {
 
         if let Ok(user_list) = get_users(&self.connection).await {
             let reply = UserListResponse {
-                users: user_list
-                    .into_iter()
-                    .map(|user| user.into())
-                    .collect(),
+                users: user_list.into_iter().map(|user| user.into()).collect(),
             };
 
             Ok(Response::new(reply))
@@ -87,9 +88,8 @@ impl User for UserHandelr {
 
         create_user(user, &self.connection)
             .await
-            .map(|el| Ok(Response::new(el.into())))
+            .map(|el| Response::new(el.into()))
             .map_err(|e| e.into())
-
     }
 
     async fn delete_user(
@@ -99,17 +99,16 @@ impl User for UserHandelr {
         tracing::info!("Got a request: {:?}", request);
         let user_id: UserIdRequest = request.into_inner();
 
-        if let Ok(_) = delete_user(user_id.id, &self.connection).await {
-            Ok(Response::new(Empty {}))
-        } else {
-            Err(Status::aborted(format!(
-                "Can't delete user with id: {}",
-                user_id.id
-            )))
-        }
+        delete_user(user_id.id, &self.connection)
+            .await
+            .map(|_| Response::new(Empty {}))
+            .map_err(|e| e.into())
     }
 
-    async fn update_user(&self, request: Request<UserUpdateRequest>) -> Result<Response<UserResponse>, Status>{
+    async fn update_user(
+        &self,
+        request: Request<UserUpdateRequest>,
+    ) -> Result<Response<UserResponse>, Status> {
         tracing::info!("Got a request: {:?}", request);
         let user_request: UserUpdateRequest = request.into_inner();
         let user_for_update = UpdateUser {
@@ -119,9 +118,10 @@ impl User for UserHandelr {
             user_address: user_request.user_address,
             phone: user_request.phone,
         };
-        
-        let user = update_user(user_for_update, &self.connection).await.expect("Can't fetch user");
 
-        Ok(Response::new(user.into()))
+        update_user(user_for_update, &self.connection)
+            .await
+            .map(|user| Response::new(user.into()))
+            .map_err(|e| e.into())
     }
 }

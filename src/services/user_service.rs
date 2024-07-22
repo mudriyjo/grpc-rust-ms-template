@@ -13,8 +13,7 @@ pub enum UserServiceError {
 impl From<UserServiceError> for Status {
     fn from(value: UserServiceError) -> Self {
         match value {
-            UserServiceError::DBError(msg) => Status::internal(msg),
-            _ => Status::unimplemented("Status handler for this error unimplemented"),
+            UserServiceError::DBError(msg) => Status::internal(msg)
         }
     }
 }
